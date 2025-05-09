@@ -87,8 +87,7 @@ public class ContaController implements ContaRepository {
 		return ++numero;
 	}
 	
-	//deixei como private pois esse método apenas auxilia o procurarPorNumero, que é o que deve ser utilizado principalmente
-	private Optional<Conta> buscarNaCollection(int numero) {
+	public Optional<Conta> buscarNaCollection(int numero) {
 		for(var conta : listaContas) {
 			if(conta.getNumero() == numero)
 				return Optional.of(conta);
