@@ -2,9 +2,11 @@ package conta_bancaria;
 
 import java.io.IOException;
 import java.util.InputMismatchException;
+import java.util.Optional;
 import java.util.Scanner;
 
 import conta_bancaria.controller.ContaController;
+import conta_bancaria.model.Conta;
 import conta_bancaria.model.ContaCorrente;
 import conta_bancaria.model.ContaPoupanca;
 import conta_bancaria.util.Cores;
@@ -14,9 +16,9 @@ public class Menu {
 	public static void main(String[] args) {
 		Scanner leia = new Scanner(System.in);
 		ContaController contas = new ContaController();
-		int opcao, numero, agencia, tipo, aniversario;
+		int opcao, numero, numeroDestino, agencia, tipo, aniversario;
 		String titular;
-		float saldo, limite;
+		float saldo, limite, valor;
 		
 		//dados mock
 		ContaCorrente cc1 = new ContaCorrente(contas.gerarNumero(), 123, 1, "João da Silva", 1000.00f, 100.00f);
@@ -114,26 +116,94 @@ public class Menu {
 			case 4:
 				System.out.println(Cores.ANSI_WHITE_BACKGROUND+Cores.TEXT_BLACK_UNDERLINED+
 						"               Atualizar dados da conta              \n\n"+Cores.TEXT_RESET);
+				
+
+				System.out.println("Digite o número da conta: ");
+				numero = leia.nextInt();
+
+				Optional<Conta> conta = contas.buscarNaCollection(numero);
+				if(conta.isPresent()) {
+					
+					System.out.print("Digite o número da Agência: ");
+					agencia = leia.nextInt();
+					
+					System.out.print("Digite o nome do Titular: ");
+					leia.skip("\\R");
+					titular = leia.nextLine();
+					
+					tipo = conta.get().getTipo();
+					
+					System.out.print("Digite o novo Saldo da conta: ");
+					saldo = leia.nextFloat();
+					
+					switch(tipo) {
+						case 1 ->{
+									System.out.print("Digite o limite da conta: ");
+									limite = leia.nextFloat();
+									contas.atualizar(new ContaCorrente(numero, agencia, tipo, titular, saldo, limite));
+							}
+						case 2 ->{
+									System.out.print("Digite o dia do aniversário da conta: ");
+									aniversario = leia.nextInt();
+									contas.atualizar(new ContaPoupanca(numero, agencia, tipo, titular, saldo, aniversario));
+							}
+					}
+				}else
+					System.out.printf("\n A conta número %d não existe!", numero);
+				
 				keyPress();
 				break;
 			case 5:
 				System.out.println(Cores.ANSI_WHITE_BACKGROUND+Cores.TEXT_BLACK_UNDERLINED+
 						"                    Apagar a conta                   \n\n"+Cores.TEXT_RESET);
+				
+				System.out.print("Digite o número da conta: ");
+				numero = leia.nextInt();
+				
+				contas.deletar(numero);
 				keyPress();
 				break;
 			case 6:
 				System.out.println(Cores.ANSI_WHITE_BACKGROUND+Cores.TEXT_BLACK_UNDERLINED+
 						"                        Saque                        \n\n"+Cores.TEXT_RESET);
+				
+				System.out.print("Digite o número da conta: ");
+				numero = leia.nextInt();
+				
+				System.out.print("Digite o valor do saque: ");
+				valor = leia.nextFloat();
+				
+				contas.sacar(numero, valor);
+				
 				keyPress();
 				break;
 			case 7:
 				System.out.println(Cores.ANSI_WHITE_BACKGROUND+Cores.TEXT_BLACK_UNDERLINED+
 						"                      Depósito                       \n\n"+Cores.TEXT_RESET);
+				
+				System.out.print("Digite o número da conta: ");
+				numero = leia.nextInt();
+				
+				System.out.print("Digite o valor do depósito: ");
+				valor = leia.nextFloat();
+				
+				contas.depositar(numero, valor);
 				keyPress();
 				break;
 			case 8:
 				System.out.println(Cores.ANSI_WHITE_BACKGROUND+Cores.TEXT_BLACK_UNDERLINED+
 						"              Transferência entre contas             \n\n"+Cores.TEXT_RESET);
+				
+				System.out.println("Digite o número da conta de origem: ");
+				numero = leia.nextInt();
+				
+				System.out.println("Digite o número da conta de destino: ");
+				numeroDestino = leia.nextInt();
+				
+				System.out.println("Digite o valor do depósito: ");
+				valor = leia.nextFloat();
+				
+				contas.transferir(numero, numeroDestino, valor);
 				keyPress();
 				break;
 			default:
@@ -154,14 +224,21 @@ public class Menu {
 	
 	public static void keyPress() {
 		try {
-
-			System.out.println(Cores.TEXT_RESET + "\n\nPressione Enter para Continuar...");
-			System.in.read();
-
-		} catch (IOException e) {
-
-			System.out.println("Você pressionou uma tecla diferente de enter!");
-
-		}
+	        System.out.println(Cores.TEXT_RESET + "\n\nPressione Enter para Continuar...");
+	        
+	        // Lê apenas a tecla Enter e ignora outras teclas
+	        int input;
+	        while ((input = System.in.read()) != '\n') {
+	            // Ignora qualquer outra tecla diferente do Enter
+	            if (input == -1) {
+	                throw new IOException("Entrada encerrada inesperadamente");
+	            }
+	        }
+	        
+	    } catch (IOException e) {
+	        System.err.println("Erro de entrada/saída: " + e.getMessage());
+	    } catch (Exception e) {
+	        System.err.println("Ocorreu um erro ao processar a entrada: " + e.getMessage());
+	    }
 	}
 }
